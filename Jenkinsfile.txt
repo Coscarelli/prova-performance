@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        JMETER_HOME = '/opt/apache-jmeter-5.6.3'
+        JMETER_RESULTS_DIR = 'jmeter/results'
+        JMETER_REPORT_DIR = 'jmeter/report'
+        JMETER_TEST_PLAN = 'jmeter/Teste_Performance_CEP.jmx'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Clonando o repositório...'
+                checkout scm
+            }
+        }
+
+        stage('Run JMeter Test') {
+            steps {
+                echo 'Executando teste de performance...'
+                sh """
+                    mkdir -p ${JMETER_RESULTS_DIR} ${JMETER_REPORT_DIR}
+                    ${JMETER_HOME}/bin/jmeter -n -t ${JMETER_TEST_PLAN} \
+                        -l ${JMETER_RESULTS_DIR}/results.jtl \
+                        -e -o ${JMETER_REPORT_DIR}
+                """
+            }
+        }
+
+        stage('Publish HTML Report') {
+            steps {
+                echo 'Publicando relatório HTML...'
+                publishHTML(target: [
+                    reportDir: "${JMETER_REPORT_DIR}",
+                    reportFiles: 'index.html',
+                    reportName: 'JMeter Performance Report'
+                ])
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Limpando workspace...'
+            archiveArtifacts artifacts: "${JMETER_RESULTS_DIR}/results.jtl", fingerprint: true
+        }
+    }
+}
