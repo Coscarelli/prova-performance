@@ -1,4 +1,4 @@
-# Prova Sicredi - Teste de Performance (ViaCEP API)
+# Teste de Performance (ViaCEP API)
 
 ## Objetivo
 Avaliar o comportamento da API pública ViaCEP sob carga simulando 1000 requisições/hora,
